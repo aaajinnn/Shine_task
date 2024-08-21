@@ -11,16 +11,14 @@ public class MenuResult {
     private final Long id;
     private final String name;
     private final int listOrder;
-    private final String parentComment;
-    private final String childComment;
+    private final String comment;
     private final List<MenuResult> children;
 
     public MenuResult(final Menu menu) {
         this.id = menu.getId();
         this.name = menu.getName();
         this.listOrder = menu.getListOrder();
-        this.parentComment = menu.getParentComment();
-        this.childComment = menu.getChildComment();
+        this.comment = menu.getComment();
         this.children = menu.getChildren().stream().map(MenuResult::new).collect(Collectors.toList());
     }
 }

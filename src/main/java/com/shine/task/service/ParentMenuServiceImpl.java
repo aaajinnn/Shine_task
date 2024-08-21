@@ -1,7 +1,6 @@
 package com.shine.task.service;
 
 import com.shine.task.dto.result.MenuResult;
-import com.shine.task.dto.rsponse.ChildMenuResponse;
 import com.shine.task.dto.rsponse.ParentMenuResponse;
 import com.shine.task.entity.Menu;
 import com.shine.task.repository.MenuRepository;
@@ -9,16 +8,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MenuServiceImpl implements MenuService {
+public class ParentMenuServiceImpl implements ParentMenuService {
 
     private final MenuRepository menuRepository;
 
@@ -29,6 +26,7 @@ public class MenuServiceImpl implements MenuService {
         return all.stream().map(MenuResult::new).collect(Collectors.toList());
     }
 
+    // 상위 메뉴 목록
     @Override
     public ResponseEntity<List<ParentMenuResponse>> getParentMenus() {
         List<Menu> menuList = menuRepository.findAllByParentIsNull();
@@ -38,23 +36,10 @@ public class MenuServiceImpl implements MenuService {
                         .id(menu.getId())
                         .name(menu.getName())
                         .listOrder(menu.getListOrder())
-                        .parentComment(menu.getParentComment())
+                        .comment(menu.getComment())
                         .build())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(parentMenuResponses);
     }
 
-//    @Override
-//    public List<ChildMenuResponse> getChildMenus() {
-//        List<Menu> menuList = menuRepository.findAllByParentIsNull();
-//
-//        return menuList.stream()
-//                .map(menu -> ChildMenuResponse.builder()
-//                        .id(menu.getId())
-//                        .name(menu.getName())
-//                        .listOrder(menu.getListOrder())
-//                        .childComment(menu.getChildComment())
-//                        .build())
-//                .collect(Collectors.toList());
-//    }
 }
