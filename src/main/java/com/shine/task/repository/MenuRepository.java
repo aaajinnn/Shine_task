@@ -13,4 +13,7 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     // 하위 메뉴 목록
     List<Menu> findAllByParentIsNotNull();
+
+    Menu findByName(String name);
+    Boolean existsByName(String name);
 }

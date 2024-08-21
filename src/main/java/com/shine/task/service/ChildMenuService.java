@@ -1,6 +1,6 @@
 package com.shine.task.service;
 
-import com.shine.task.dto.rsponse.ChildMenuResponse;
+import com.shine.task.dto.response.ChildMenuResponse;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;

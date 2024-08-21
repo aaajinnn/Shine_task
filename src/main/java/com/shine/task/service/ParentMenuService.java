@@ -1,7 +1,9 @@
 package com.shine.task.service;
 
+import com.shine.task.common.CommonResponse;
 import com.shine.task.dto.result.MenuResult;
-import com.shine.task.dto.rsponse.ParentMenuResponse;
+import com.shine.task.dto.request.MenuUpdateRequest;
+import com.shine.task.dto.response.ParentMenuResponse;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -11,4 +13,8 @@ public interface ParentMenuService {
     List<MenuResult> getMenus();
 
     ResponseEntity<List<ParentMenuResponse>> getParentMenus();
+
+    ResponseEntity<CommonResponse> createOrUpdateParentMenu(MenuUpdateRequest menuUpdateRequest);
+    ResponseEntity<CommonResponse> deleteParentMenu(Long id);
+
 }

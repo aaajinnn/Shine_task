@@ -1,13 +1,16 @@
 package com.shine.task.service;
 
+import com.shine.task.common.CommonResponse;
 import com.shine.task.dto.result.MenuResult;
-import com.shine.task.dto.rsponse.ParentMenuResponse;
+import com.shine.task.dto.request.MenuUpdateRequest;
+import com.shine.task.dto.response.ParentMenuResponse;
 import com.shine.task.entity.Menu;
 import com.shine.task.repository.MenuRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,4 +45,67 @@ public class ParentMenuServiceImpl implements ParentMenuService {
         return ResponseEntity.ok(parentMenuResponses);
     }
 
+    // 등록
+    public void saveMenu(Menu menu) {
+        menuRepository.save(menu);
+    }
+
+    // 수정
+    public void updateMenu(Long id, MenuUpdateRequest menuUpdateRequest) {
+        Menu menu = menuRepository.findById(id).orElseThrow(() -> new RuntimeException("Menu not found"));
+
+        menu.setName(menuUpdateRequest.getName());
+        menu.setListOrder(menuUpdateRequest.getListOrder());
+        menu.setComment(menuUpdateRequest.getComment());
+
+        menuRepository.save(menu);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<CommonResponse> createOrUpdateParentMenu(MenuUpdateRequest menuUpdateRequest) {
+        String name = menuUpdateRequest.getName();
+        boolean exists = menuRepository.existsByName(name);
+
+        if(exists) {
+            // 수정
+            Menu existingMenu = menuRepository.findByName(name);
+            updateMenu(existingMenu.getId(), menuUpdateRequest);
+        } else {
+            // 등록
+            Menu newMenu = Menu.builder()
+                    .name(menuUpdateRequest.getName())
+                    .listOrder(menuUpdateRequest.getListOrder())
+                    .comment(menuUpdateRequest.getComment())
+                    .build();
+            saveMenu(newMenu);
+        }
+
+        return ResponseEntity.ok()
+                .body(CommonResponse.builder()
+                        .response("Create or Update Menu Success")
+                        .status("Success")
+                        .build());
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<CommonResponse> deleteParentMenu(Long id) {
+        boolean exist = menuRepository.existsById(id);
+
+        if (exist) {
+            menuRepository.deleteById(id);
+        } else {
+            return ResponseEntity.badRequest()
+                    .body(CommonResponse.builder()
+                            .response("Delete Fail (Not Found Menu)")
+                            .status("Fail")
+                            .build());
+        }
+        return ResponseEntity.ok()
+                .body(CommonResponse.builder()
+                        .response("Delete Success")
+                        .status("Success")
+                        .build());
+    }
 }

@@ -1,6 +1,6 @@
 package com.shine.task.service;
 
-import com.shine.task.dto.rsponse.ChildMenuResponse;
+import com.shine.task.dto.response.ChildMenuResponse;
 import com.shine.task.entity.Menu;
 import com.shine.task.repository.MenuRepository;
 import lombok.RequiredArgsConstructor;

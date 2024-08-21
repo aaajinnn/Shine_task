@@ -1,6 +1,6 @@
 package com.shine.task.controller;
 
-import com.shine.task.dto.rsponse.ChildMenuResponse;
+import com.shine.task.dto.response.ChildMenuResponse;
 import com.shine.task.service.ChildMenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
