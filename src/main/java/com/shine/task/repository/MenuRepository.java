@@ -20,4 +20,6 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     Menu findByName(String name);
     Boolean existsByName(String name);
+
+    List<Menu> findByParentId(Long parentId);
 }
