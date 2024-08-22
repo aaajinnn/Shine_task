@@ -20,8 +20,8 @@ public class ChildMenuServiceImpl implements ChildMenuService {
 
     // 하위 메뉴 목록
     @Override
-    public ResponseEntity<List<ChildMenuResponse>> getChildMenus() {
-        List<Menu> menuList = menuRepository.findAllByParentIsNotNull();
+    public ResponseEntity<List<ChildMenuResponse>> getChildMenus(Long parentId) {
+        List<Menu> menuList = menuRepository.findByParentId(parentId);
 
         List<ChildMenuResponse> childMenuResponses = menuList.stream()
                 .map(menu -> ChildMenuResponse.builder()
@@ -33,5 +33,11 @@ public class ChildMenuServiceImpl implements ChildMenuService {
                         .build())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(childMenuResponses);
+    }
+
+    // 상위 메뉴 parent_id 에 해당하는 이름 가져오기
+    @Override
+    public ResponseEntity<List<ChildMenuResponse>> getChildMenusByParentId(Long parentId) {
+        return null;
     }
 }
