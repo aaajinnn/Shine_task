@@ -91,17 +91,23 @@ public class ParentMenuServiceImpl implements ParentMenuService {
     @Override
     @Transactional
     public ResponseEntity<CommonResponse> deleteParentMenu(Long id) {
-        boolean exist = menuRepository.existsById(id);
+        boolean existMenu = menuRepository.existsById(id);
+        int countChildMenus = menuRepository.countByParentIdIsNotNull(id);
 
-        if (exist) {
-            menuRepository.deleteById(id);
-        } else {
+        if(!existMenu) {
             return ResponseEntity.badRequest()
                     .body(CommonResponse.builder()
                             .response("Delete Fail (Not Found Menu)")
                             .status("Fail")
                             .build());
+        } else if(countChildMenus > 0) {
+            return ResponseEntity.badRequest()
+                    .body(CommonResponse.builder()
+                            .response("Delete Fail (Menu has child menus)")
+                            .status("Fail")
+                            .build());
         }
+        menuRepository.deleteById(id);
         return ResponseEntity.ok()
                 .body(CommonResponse.builder()
                         .response("Delete Success")
