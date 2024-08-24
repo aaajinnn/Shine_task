@@ -45,62 +45,112 @@ public class ParentMenuServiceImpl implements ParentMenuService {
         return ResponseEntity.ok(parentMenuResponses);
     }
 
-    // 등록
-    public void saveMenu(Menu menu) {
-        menuRepository.save(menu);
-    }
-
-    // 수정
-    public void updateMenu(Long id, MenuUpdateRequest menuUpdateRequest) {
-        Menu menu = menuRepository.findById(id).orElseThrow(() -> new RuntimeException("Menu not found"));
-
-        menu.setName(menuUpdateRequest.getName());
-        menu.setListOrder(menuUpdateRequest.getListOrder());
-        menu.setComment(menuUpdateRequest.getComment());
-
-        menuRepository.save(menu);
-    }
-
+    // 순서 변경
     @Override
     @Transactional
-    public ResponseEntity<CommonResponse> createOrUpdateParentMenu(MenuUpdateRequest menuUpdateRequest) {
-        String name = menuUpdateRequest.getName();
-        boolean exists = menuRepository.existsByName(name);
-
-        if(exists) {
-            // 수정
-            Menu existingMenu = menuRepository.findByName(name);
-            updateMenu(existingMenu.getId(), menuUpdateRequest);
-        } else {
-            // 등록
-            Menu newMenu = Menu.builder()
-                    .name(menuUpdateRequest.getName())
-                    .listOrder(menuUpdateRequest.getListOrder())
-                    .comment(menuUpdateRequest.getComment())
-                    .build();
-            saveMenu(newMenu);
+    public ResponseEntity<CommonResponse> updateListOrder(List<MenuUpdateRequest> menuUpdateRequest) {
+        try {
+            for (MenuUpdateRequest request : menuUpdateRequest) {
+                menuRepository.updateListOrder(request.getId(), request.getListOrder());
+            }
+            return ResponseEntity.ok()
+                    .body(CommonResponse.builder()
+                            .response("Update list order success")
+                            .status("Success")
+                            .build());
+        } catch (Exception e) {
+            log.error("Error updating list order", e);
+            return ResponseEntity.internalServerError()
+                    .body(CommonResponse.builder()
+                            .response("Update list order failed")
+                            .status("Fail")
+                            .build());
         }
+    }
+
+    // name 유효성 체크
+    private ResponseEntity<CommonResponse> validateMenuRequest(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(CommonResponse.builder()
+                    .response("Menu name cannot be null or empty")
+                    .status("Fail")
+                    .build());
+        }
+
+        if (menuRepository.existsByName(name)) {
+            return ResponseEntity.badRequest().body(CommonResponse.builder()
+                    .response("Menu name already exists")
+                    .status("Fail")
+                    .build());
+        }
+        return null;
+    }
+
+    // 등록
+    @Override
+    @Transactional
+    public ResponseEntity<CommonResponse> createParentMenu(MenuUpdateRequest menuUpdateRequest) {
+        String name = menuUpdateRequest.getName();
+
+        ResponseEntity<CommonResponse> CheckedResponse = validateMenuRequest(name);
+        if (CheckedResponse != null) {
+            return CheckedResponse;
+        }
+
+        // 마지막순서에 1을 더한 값을 등록
+        Integer defineListOrder = menuRepository.findLastListOrder() + 1;
+
+        Menu newMenu = Menu.builder()
+                .name(menuUpdateRequest.getName())
+                .listOrder(defineListOrder)
+                .comment(menuUpdateRequest.getComment())
+                .build();
+        menuRepository.save(newMenu);
 
         return ResponseEntity.ok()
                 .body(CommonResponse.builder()
-                        .response("Create or Update Menu Success")
+                        .response("Create menu success")
                         .status("Success")
                         .build());
     }
 
+    // 수정
+    @Override
+    @Transactional
+    public ResponseEntity<CommonResponse> updateParentMenu(Long id, MenuUpdateRequest menuUpdateRequest) {
+        Menu menu = menuRepository.findById(id).orElseThrow(() -> new RuntimeException("Menu not found"));
+
+        String newName = menuUpdateRequest.getName();
+        if (newName == null || newName.trim().isEmpty()) {
+            newName = menu.getName();
+        } else {
+            ResponseEntity<CommonResponse> CheckedResponse = validateMenuRequest(newName);
+            if (CheckedResponse != null && !newName.equals(menu.getName())) {
+                return CheckedResponse;
+            }
+        }
+
+        menu.setName(newName);
+        menu.setComment(menuUpdateRequest.getComment());
+        menuRepository.save(menu);
+
+        return ResponseEntity.ok()
+                .body(CommonResponse.builder()
+                        .response("Update menu success")
+                        .status("Success")
+                        .build());
+    }
+
+    // 삭제
     @Override
     @Transactional
     public ResponseEntity<CommonResponse> deleteParentMenu(Long id) {
-        boolean existMenu = menuRepository.existsById(id);
-        int countChildMenus = menuRepository.countByParentIdIsNotNull(id);
+        Menu menu = menuRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Delete Fail (Not Found Menu)"));
 
-        if(!existMenu) {
-            return ResponseEntity.badRequest()
-                    .body(CommonResponse.builder()
-                            .response("Delete Fail (Not Found Menu)")
-                            .status("Fail")
-                            .build());
-        } else if(countChildMenus > 0) {
+        int countChildMenus = menuRepository.countByParentIdIsNotNull(menu.getId());
+
+        if (countChildMenus > 0) {
             return ResponseEntity.badRequest()
                     .body(CommonResponse.builder()
                             .response("Delete Fail (Menu has child menus)")

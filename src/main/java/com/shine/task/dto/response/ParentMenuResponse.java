@@ -8,6 +8,6 @@ import lombok.Getter;
 public class ParentMenuResponse {
     private Long id;
     private String name;
-    private int listOrder;
+    private Integer listOrder;
     private String comment;
 }

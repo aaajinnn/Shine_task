@@ -4,17 +4,11 @@ import com.shine.task.common.CommonResponse;
 import com.shine.task.dto.request.MenuUpdateRequest;
 import com.shine.task.dto.result.MenuResult;
 import com.shine.task.dto.response.ParentMenuResponse;
+import com.shine.task.entity.Menu;
 import com.shine.task.service.ParentMenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,7 +21,7 @@ public class ParentMenuController {
     private final ParentMenuService parentMenuService;
 
     //테스트(전체메뉴 목록)
-    @GetMapping("/test")
+    @GetMapping
     public ResponseEntity<List<MenuResult>> getMenuList(){
         final List<MenuResult> menus = parentMenuService.getMenus();
         return ResponseEntity.ok(menus);
@@ -39,14 +33,27 @@ public class ParentMenuController {
         return parentMenuService.getParentMenus();
     }
 
+    // 순서 변경
+    @PutMapping("/save-order")
+    public ResponseEntity<CommonResponse> saveListOrder(@RequestBody List<MenuUpdateRequest> menu) {
+        return parentMenuService.updateListOrder(menu);
+    }
+
+    // 등록
+    @PutMapping("/save")
+    public ResponseEntity<?> createOrUpdateParentMenu(@RequestBody MenuUpdateRequest menuUpdateRequest) {
+        return parentMenuService.createParentMenu(menuUpdateRequest);
+    }
+
+    // 수정
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> updateParentMenu(@PathVariable Long id, @RequestBody MenuUpdateRequest menuUpdateRequest) {
+        return parentMenuService.updateParentMenu(id, menuUpdateRequest);
+    }
+
+    // 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<CommonResponse> deleteParentMenuById(@PathVariable Long id) {
         return parentMenuService.deleteParentMenu(id);
     }
-
-    @PutMapping("/save")
-    public ResponseEntity<?> createOrUpdateParentMenu(@RequestBody MenuUpdateRequest menuUpdateRequest) {
-        return parentMenuService.createOrUpdateParentMenu(menuUpdateRequest);
-    }
-
 }
