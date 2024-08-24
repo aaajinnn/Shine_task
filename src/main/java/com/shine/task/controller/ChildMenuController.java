@@ -24,7 +24,7 @@ public class ChildMenuController {
     public ResponseEntity<List<ChildMenuResponse>> getParentMenuList(@RequestParam Long id) {
         // id 값이 유효한지 확인
         if (id == null) {
-            return ResponseEntity.badRequest().build(); // 400 Bad Request
+            return ResponseEntity.badRequest().build();
         }
         // 서비스 호출
         return childMenuService.getChildMenus(id);

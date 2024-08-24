@@ -35,9 +35,4 @@ public class ChildMenuServiceImpl implements ChildMenuService {
         return ResponseEntity.ok(childMenuResponses);
     }
 
-    // 상위 메뉴 parent_id 에 해당하는 이름 가져오기
-    @Override
-    public ResponseEntity<List<ChildMenuResponse>> getChildMenusByParentId(Long parentId) {
-        return null;
-    }
 }
