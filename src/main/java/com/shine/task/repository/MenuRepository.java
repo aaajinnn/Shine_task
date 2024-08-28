@@ -15,9 +15,13 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     @Query("SELECT m FROM Menu m WHERE m.parent.id IS NULL ORDER BY m.listOrder")
     List<Menu> findAllByParentIsNull();
 
-    // 마지막 순서 조회
-    @Query("SELECT MAX(m.listOrder) FROM Menu m")
-    int findLastListOrder();
+    // 마지막 순서 조회(상위 메뉴)
+    @Query("SELECT MAX(m.listOrder) FROM Menu m WHERE m.parent.id IS NULL")
+    int findLastOrderForParent();
+
+    // 마지막 순서 조회(하위 메뉴)
+    @Query("SELECT MAX(m.listOrder) FROM Menu m WHERE m.parent.id IS NOT NULL AND m.parent.id = :parentId")
+    Integer findLastOrderForChild(@Param("parentId") Long parentId);
 
     // 순서 수정
     @Modifying
@@ -33,5 +37,9 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     Menu findByName(String name);
     Boolean existsByName(String name);
 
-    List<Menu> findByParentId(Long parentId);
+    @Query("SELECT m FROM Menu m WHERE m.parent.id =:parentId ORDER BY m.listOrder")
+    List<Menu> findByParentId(@Param("parentId") Long parentId);
+
+    Boolean existsByParentId(Long parentId);
+
 }
