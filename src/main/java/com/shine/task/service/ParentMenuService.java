@@ -4,7 +4,6 @@ import com.shine.task.common.CommonResponse;
 import com.shine.task.dto.result.MenuResult;
 import com.shine.task.dto.request.MenuUpdateRequest;
 import com.shine.task.dto.response.ParentMenuResponse;
-import com.shine.task.entity.Menu;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;

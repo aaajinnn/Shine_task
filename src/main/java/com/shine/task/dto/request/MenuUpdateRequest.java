@@ -7,8 +7,9 @@ import lombok.Getter;
 @Builder
 public class MenuUpdateRequest {
     private Long id;
-    private Long parent_id;
+    private Long parentId;
     private String name;
+    private String childName;
     private int listOrder;
     private String comment;
 }

@@ -7,8 +7,9 @@ import lombok.Getter;
 @Builder
 public class ChildMenuResponse {
     private Long id;
-    private Long parent_id;
-    private String name;
+    private Long parentId;
+    private String parentName;
+    private String childName;
     private int listOrder;
     private String comment;
 }

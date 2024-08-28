@@ -1,9 +1,10 @@
 package com.shine.task.service;
 
 import com.shine.task.common.CommonResponse;
-import com.shine.task.dto.result.MenuResult;
+import com.shine.task.common.ValidationResponse;
 import com.shine.task.dto.request.MenuUpdateRequest;
 import com.shine.task.dto.response.ParentMenuResponse;
+import com.shine.task.dto.result.MenuResult;
 import com.shine.task.entity.Menu;
 import com.shine.task.repository.MenuRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 public class ParentMenuServiceImpl implements ParentMenuService {
 
     private final MenuRepository menuRepository;
+    private final ValidationResponse validationResponse;
 
     // 테스트(전체메뉴 목록)
     @Override
@@ -50,9 +53,21 @@ public class ParentMenuServiceImpl implements ParentMenuService {
     @Transactional
     public ResponseEntity<CommonResponse> updateListOrder(List<MenuUpdateRequest> menuUpdateRequest) {
         try {
+
+            List<Menu> menuList = new ArrayList<>();
+
+            // UpdateListOrder를 가져와서 할 필요없이 이렇게 saveAll()을 이용하여 update 할 수 있음!!
+            // save와 saveAll의 차이 ?
+            // save()를 여러번 호출하는 경우는 계속 기존의 트랜잭션이 존재하는 지 계속 확인해줘야 하기 때문에 추가로 리소스가 소모됨
+            // 하지만 saveAll()의 내부에서는 save()를 호출한다. => saveAll()을 할 때 트랜잭션이 생성되어 "하나의 트랜잭션"으로 작동한다. => 때문에 save()를 여러번 하는 것보다 성능이 더 좋다.
             for (MenuUpdateRequest request : menuUpdateRequest) {
-                menuRepository.updateListOrder(request.getId(), request.getListOrder());
+                Menu menu = menuRepository.findById(request.getId()).orElseThrow(() -> new RuntimeException("Menu not found"));
+                menu.setListOrder(request.getListOrder());
+                menuList.add(menu);
             }
+
+            menuRepository.saveAll(menuList);
+
             return ResponseEntity.ok()
                     .body(CommonResponse.builder()
                             .response("Update list order success")
@@ -68,44 +83,31 @@ public class ParentMenuServiceImpl implements ParentMenuService {
         }
     }
 
-    // name 유효성 체크
-    private ResponseEntity<CommonResponse> validateMenuRequest(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(CommonResponse.builder()
-                    .response("Menu name cannot be null or empty")
-                    .status("Fail")
-                    .build());
-        }
-
-        if (menuRepository.existsByName(name)) {
-            return ResponseEntity.badRequest().body(CommonResponse.builder()
-                    .response("Menu name already exists")
-                    .status("Fail")
-                    .build());
-        }
-        return null;
-    }
-
     // 등록
     @Override
     @Transactional
     public ResponseEntity<CommonResponse> createParentMenu(MenuUpdateRequest menuUpdateRequest) {
+        List<Menu> menuList = new ArrayList<>();
+
         String name = menuUpdateRequest.getName();
 
-        ResponseEntity<CommonResponse> CheckedResponse = validateMenuRequest(name);
+        ResponseEntity<CommonResponse> CheckedResponse = validationResponse.checkMenuName(name);
         if (CheckedResponse != null) {
             return CheckedResponse;
         }
 
         // 마지막순서에 1을 더한 값을 등록
-        Integer defineListOrder = menuRepository.findLastListOrder() + 1;
+        Integer defineListOrder = menuRepository.findLastOrderForParent() + 1;
 
         Menu newMenu = Menu.builder()
                 .name(menuUpdateRequest.getName())
                 .listOrder(defineListOrder)
                 .comment(menuUpdateRequest.getComment())
                 .build();
-        menuRepository.save(newMenu);
+
+        menuList.add(newMenu);
+
+        menuRepository.saveAll(menuList);
 
         return ResponseEntity.ok()
                 .body(CommonResponse.builder()
@@ -118,21 +120,20 @@ public class ParentMenuServiceImpl implements ParentMenuService {
     @Override
     @Transactional
     public ResponseEntity<CommonResponse> updateParentMenu(Long id, MenuUpdateRequest menuUpdateRequest) {
+        List<Menu> menuList = new ArrayList<>();
+
         Menu menu = menuRepository.findById(id).orElseThrow(() -> new RuntimeException("Menu not found"));
 
         String newName = menuUpdateRequest.getName();
-        if (newName == null || newName.trim().isEmpty()) {
-            newName = menu.getName();
-        } else {
-            ResponseEntity<CommonResponse> CheckedResponse = validateMenuRequest(newName);
+        ResponseEntity<CommonResponse> CheckedResponse = validationResponse.checkMenuName(newName);
             if (CheckedResponse != null && !newName.equals(menu.getName())) {
                 return CheckedResponse;
             }
-        }
 
         menu.setName(newName);
         menu.setComment(menuUpdateRequest.getComment());
-        menuRepository.save(menu);
+        menuList.add(menu);
+        menuRepository.saveAll(menuList);
 
         return ResponseEntity.ok()
                 .body(CommonResponse.builder()
