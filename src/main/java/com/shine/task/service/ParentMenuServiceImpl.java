@@ -152,11 +152,10 @@ public class ParentMenuServiceImpl implements ParentMenuService {
         int countChildMenus = menuRepository.countByParentIdIsNotNull(menu.getId());
 
         if (countChildMenus > 0) {
-            return ResponseEntity.badRequest()
-                    .body(CommonResponse.builder()
-                            .response("Delete Fail (Menu has child menus)")
-                            .status("Fail")
-                            .build());
+            return ResponseEntity.status(442).body(CommonResponse.builder()
+                    .response("Delete Fail (Menu has child menus)")
+                    .status("Fail")
+                    .build());
         }
         menuRepository.deleteById(id);
         return ResponseEntity.ok()

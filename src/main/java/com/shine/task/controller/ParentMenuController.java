@@ -41,13 +41,13 @@ public class ParentMenuController {
 
     // 등록
     @PutMapping("/save")
-    public ResponseEntity<?> createOrUpdateParentMenu(@RequestBody MenuUpdateRequest menuUpdateRequest) {
+    public ResponseEntity<CommonResponse> createOrUpdateParentMenu(@RequestBody MenuUpdateRequest menuUpdateRequest) {
         return parentMenuService.createParentMenu(menuUpdateRequest);
     }
 
     // 수정
     @PatchMapping("/{id}")
-    public ResponseEntity<?> updateParentMenu(@PathVariable Long id, @RequestBody MenuUpdateRequest menuUpdateRequest) {
+    public ResponseEntity<CommonResponse> updateParentMenu(@PathVariable Long id, @RequestBody MenuUpdateRequest menuUpdateRequest) {
         return parentMenuService.updateParentMenu(id, menuUpdateRequest);
     }
 
