@@ -3,6 +3,7 @@ package com.shine.task.dto.result;
 import com.shine.task.entity.Menu;
 import lombok.Getter;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +20,8 @@ public class MenuResult {
         this.name = menu.getName();
         this.listOrder = menu.getListOrder();
         this.comment = menu.getComment();
-        this.children = menu.getChildren().stream().map(MenuResult::new).collect(Collectors.toList());
+        this.children = menu.getChildren().stream().map(MenuResult::new)
+                .sorted(Comparator.comparingInt(MenuResult::getListOrder)) //children의 listOrder 정렬 추가
+                .collect(Collectors.toList());
     }
 }

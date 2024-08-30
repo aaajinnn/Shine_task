@@ -14,15 +14,15 @@ public class ValidationResponse {
     // name 유효성 체크
     public ResponseEntity<CommonResponse> checkMenuName(String name) {
         if (name == null || name.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(CommonResponse.builder()
+            return ResponseEntity.status(440).body(CommonResponse.builder()
                     .response("Menu name cannot be null or empty")
                     .status("Fail")
                     .build());
         }
 
         if (menuRepository.existsByName(name)) {
-            return ResponseEntity.badRequest().body(CommonResponse.builder()
-                    .response("Menu name already exists")
+            return ResponseEntity.status(441).body(CommonResponse.builder()
+                    .response("Menu name cannot be null or empty")
                     .status("Fail")
                     .build());
         }
